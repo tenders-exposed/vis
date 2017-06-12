@@ -5,7 +5,7 @@
  * A dynamic, browser-based visualization library.
  *
  * @version 4.20.0
- * @date    2017-05-21
+ * @date    2017-06-12
  *
  * @license
  * Copyright (C) 2011-2017 Almende B.V, http://almende.com
@@ -21180,10 +21180,10 @@ return /******/ (function(modules) { // webpackBootstrap
             groupsData.update(updatedNestedGroup);
           });
         }
-      });
+      }
 
       // subscribe to new dataset
-      var id = this.id;
+      );var id = this.id;
       util.forEach(this.groupListeners, function (callback, event) {
         me.groupsData.on(event, callback, id);
       });
@@ -22364,8 +22364,8 @@ return /******/ (function(modules) { // webpackBootstrap
     if (item) {
       // multi select items (if allowed)
 
-      var selection = this.options.multiselect ? this.getSelection() // take current selection
-      : []; // deselect current selection
+      var selection = this.options.multiselect ? this.getSelection // take current selection
+      () : []; // deselect current selection
 
       var shiftKey = event.srcEvent && event.srcEvent.shiftKey || false;
 
@@ -35396,8 +35396,8 @@ return /******/ (function(modules) { // webpackBootstrap
       { border: "#FFC0CB", background: "#FD5A77", highlight: { border: "#FFD1D9", background: "#FD5A77" }, hover: { border: "#FFD1D9", background: "#FD5A77" } }, // 18: pink
       { border: "#C2FABC", background: "#74D66A", highlight: { border: "#E6FFE3", background: "#74D66A" }, hover: { border: "#E6FFE3", background: "#74D66A" } }, // 19: mint
 
-      { border: "#EE0000", background: "#990000", highlight: { border: "#FF3333", background: "#BB0000" }, hover: { border: "#FF3333", background: "#BB0000" } } // 20:bright red
-      ];
+      { border: "#EE0000", background: "#990000", highlight: { border: "#FF3333", background: "#BB0000" }, hover: { border: "#FF3333", background: "#BB0000" } // 20:bright red
+      }];
 
       this.options = {};
       this.defaultOptions = {
@@ -44852,7 +44852,19 @@ return /******/ (function(modules) { // webpackBootstrap
 
               // Only edges from the cluster outwards are being replaced.
               if (childNodesObj[otherNodeId] === undefined) {
-                createEdges.push({ edge: edge, fromId: fromId, toId: toId });
+                var hidden = false;
+                var value = edge.options.value;
+                for (var _j1 = 0; _j1 < createEdges.length; _j1++) {
+                  var createEdge = createEdges[_j1];
+                  console.log('toId ' + toId + ' fromId ' + toId + ' createEdge -> from ' + createEdge.fromId + ' to ' + createEdge.toId);
+                  if (createEdge.fromId === fromId && createEdge.toId === toId || createEdge.toId === fromId && createEdge.fromId === toId) {
+                    console.log('ther same');
+                    value += createEdge.edge.options.value;
+                    createEdge.hidden = true;
+                  }
+                }
+                console.log('create clustered Edges source!!!!!!!!!!!!!');
+                createEdges.push({ edge: edge, fromId: fromId, toId: toId, hidden: false, value: value });
               }
             }
           }
@@ -44860,11 +44872,17 @@ return /******/ (function(modules) { // webpackBootstrap
 
         // here we actually create the replacement edges. We could not do this in the loop above as the creation process
         // would add an edge to the edges array we are iterating over.
+        console.log('createEdgess before for createEdges6', createEdges);
+        var lastEdge = createEdges.length - 1;
+        console.log('lastEdge', lastEdge);
+        console.log('createEdgeslen', createEdges.length);
+
         for (var _j2 = 0; _j2 < createEdges.length; _j2++) {
           var _edge = createEdges[_j2].edge;
           // copy the options of the edge we will replace
           var clonedOptions = NetworkUtil.cloneOptions(_edge, 'edge');
           // make sure the properties of clusterEdges are superimposed on it
+          clusterEdgeProperties = { hidden: createEdges[_j2].hidden, value: createEdges[_j2].value };
           util.deepExtend(clonedOptions, clusterEdgeProperties);
 
           // set up the edge
@@ -44872,6 +44890,7 @@ return /******/ (function(modules) { // webpackBootstrap
           clonedOptions.to = createEdges[_j2].toId;
           clonedOptions.id = 'clusterEdge:' + util.randomUUID();
           //clonedOptions.id = '(cf: ' + createEdges[j].fromId + " to: " + createEdges[j].toId + ")" + Math.random();
+          console.log('clonedOptions', clonedOptions);
 
           // create the edge and give a reference to the one it replaced.
           var newEdge = this.body.functions.createEdge(clonedOptions);
@@ -52368,6 +52387,7 @@ return /******/ (function(modules) { // webpackBootstrap
       minVelocity: [0.1, 0.01, 0.5, 0.01],
       solver: ['barnesHut', 'forceAtlas2Based', 'repulsion', 'hierarchicalRepulsion'],
       timestep: [0.5, 0.01, 1, 0.01]
+      //adaptiveTimestep: true
     }
   };
 
