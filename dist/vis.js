@@ -5,7 +5,7 @@
  * A dynamic, browser-based visualization library.
  *
  * @version 4.20.0
- * @date    2017-06-12
+ * @date    2017-09-24
  *
  * @license
  * Copyright (C) 2011-2017 Almende B.V, http://almende.com
@@ -35582,9 +35582,9 @@ return /******/ (function(modules) { // webpackBootstrap
           },
           mono: {
             mod: '',
-            size: 15, // px
-            face: 'monospace',
-            vadjust: 2
+            size: 10, // px
+            face: 'Roboto',
+            vadjust: 10
           }
         },
         group: undefined,
@@ -36650,6 +36650,10 @@ return /******/ (function(modules) { // webpackBootstrap
     value: true
   });
 
+  var _keys = __webpack_require__(58);
+
+  var _keys2 = _interopRequireDefault(_keys);
+
   var _slicedToArray2 = __webpack_require__(170);
 
   var _slicedToArray3 = _interopRequireDefault(_slicedToArray2);
@@ -36960,6 +36964,62 @@ return /******/ (function(modules) { // webpackBootstrap
       }
 
       /**
+      * Draws a rounded rectangle using the current state of the canvas.
+      * If you omit the last three params, it will draw a rectangle
+      * outline with a 5 pixel border radius
+      * @param {CanvasRenderingContext2D} ctx
+      * @param {Number} x The top left x coordinate
+      * @param {Number} y The top left y coordinate
+      * @param {Number} width The width of the rectangle
+      * @param {Number} height The height of the rectangle
+      * @param {Number} [radius = 5] The corner radius; It can also be an object 
+      *                 to specify different radii for corners
+      * @param {Number} [radius.tl = 0] Top left
+      * @param {Number} [radius.tr = 0] Top right
+      * @param {Number} [radius.br = 0] Bottom right
+      * @param {Number} [radius.bl = 0] Bottom left
+      * @param {Boolean} [fill = false] Whether to fill the rectangle.
+      * @param {Boolean} [stroke = true] Whether to stroke the rectangle.
+      */
+
+    }, {
+      key: 'roundRect',
+      value: function roundRect(ctx, x, y, width, height, radius, fill, stroke) {
+        if (typeof stroke == 'undefined') {
+          stroke = true;
+        }
+        if (typeof radius === 'undefined') {
+          radius = 5;
+        }
+        if (typeof radius === 'number') {
+          radius = { tl: radius, tr: radius, br: radius, bl: radius };
+        } else {
+          var defaultRadius = { tl: 0, tr: 0, br: 0, bl: 0 };
+          for (var side in defaultRadius) {
+            radius[side] = radius[side] || defaultRadius[side];
+          }
+        }
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(x + radius.tl, y);
+        ctx.lineTo(x + width - radius.tr, y);
+        ctx.quadraticCurveTo(x + width, y, x + width, y + radius.tr);
+        ctx.lineTo(x + width, y + height - radius.br);
+        ctx.quadraticCurveTo(x + width, y + height, x + width - radius.br, y + height);
+        ctx.lineTo(x + radius.bl, y + height);
+        ctx.quadraticCurveTo(x, y + height, x, y + height - radius.bl);
+        ctx.lineTo(x, y + radius.tl);
+        ctx.quadraticCurveTo(x, y, x + radius.tl, y);
+        ctx.closePath();
+        if (fill) {
+          ctx.fill();
+        }
+        if (stroke) {
+          ctx.stroke();
+        }
+      }
+
+      /**
        * Draws the label background
        * @param {CanvasRenderingContext2D} ctx
        * @private
@@ -36968,7 +37028,9 @@ return /******/ (function(modules) { // webpackBootstrap
     }, {
       key: '_drawBackground',
       value: function _drawBackground(ctx) {
+
         if (this.fontOptions.background !== undefined && this.fontOptions.background !== "none") {
+
           ctx.fillStyle = this.fontOptions.background;
 
           var lineMargin = 2;
@@ -37036,6 +37098,7 @@ return /******/ (function(modules) { // webpackBootstrap
         }
 
         // draw the text
+
         for (var i = 0; i < this.lineCount; i++) {
           if (this.lines[i] && this.lines[i].blocks) {
             var width = 0;
@@ -37044,8 +37107,10 @@ return /******/ (function(modules) { // webpackBootstrap
             } else if (this.fontOptions.align === 'right') {
               width += this.size.width - this.lines[i].width;
             }
+
             for (var j = 0; j < this.lines[i].blocks.length; j++) {
               var block = this.lines[i].blocks[j];
+
               ctx.font = block.font;
 
               var _getColor2 = this._getColor(block.color, viewFontSize, block.strokeColor),
@@ -37058,15 +37123,50 @@ return /******/ (function(modules) { // webpackBootstrap
                 ctx.strokeStyle = strokeColor;
                 ctx.lineJoin = 'round';
               }
+
+              // console.log('block', block);
+              // label
+              if (this.isEdgeLabel) {
+                block.color = '#ff6802';
+                fontColor = '#ff6802';
+
+                ctx.strokeStyle = '#cbcbcb';
+                ctx.fillStyle = '#0e0e10';
+                this.roundRect(ctx, x + width - 3, yLine - this.lines[i].height / 2 - 2, block.width + 6, this.lines[i].height + 4, 4, true);
+              } else {
+                if (i == 0) {
+                  block.vadjust = this.lineCount > 1 ? 15 : 6;
+                  ctx.strokeStyle = '#cbcbcb';
+                  ctx.fillStyle = '#0e0e10';
+
+                  //  roundRect(ctx, x, y, width, height, radius, fill, stroke)
+                  this.roundRect(ctx, x + width - 6, yLine + block.vadjust - 7, block.width + 10, this.lines[i].height + 8, 5, true);
+                }
+
+                //flags
+                if (i == 1) {
+                  block.vadjust = 10;
+                  block.color = '#ff6802';
+                  fontColor = '#ff6802';
+
+                  ctx.strokeStyle = '#cbcbcb';
+                  ctx.fillStyle = '#0e0e10';
+                  this.roundRect(ctx, x + width - 3, yLine + block.vadjust - 3, block.width + 6, this.lines[i].height + 4, 4, true);
+                }
+              }
+
               ctx.fillStyle = fontColor;
+              if (j == 1) {
+                console.log('ctx settings', ctx);
+              }
 
               if (block.strokeWidth > 0) {
                 ctx.strokeText(block.text, x + width, yLine + block.vadjust);
               }
               ctx.fillText(block.text, x + width, yLine + block.vadjust);
-              width += block.width;
+              //width += block.width;
             }
-            yLine += this.lines[i].height;
+            yLine -= this.lines[i].height;
           }
         }
       }
@@ -37514,11 +37614,24 @@ return /******/ (function(modules) { // webpackBootstrap
           this.accumulate(l, width, height);
         };
         if (this.elementOptions.label !== undefined) {
-          var _nlLines = String(this.elementOptions.label).split('\n');
+          // add Flags if needed
+          var flags = '';
+
+          if (this.elementOptions.flags !== undefined) {
+            if ((0, _keys2['default'])(this.elementOptions.flags).length > 0) {
+              flags += '\n';
+              for (var i = 0; i < (0, _keys2['default'])(this.elementOptions.flags).length; i++) {
+                flags += '⚑';
+              }
+            }
+          }
+          var labelText = this.elementOptions.label + flags;
+
+          var _nlLines = String(labelText).split('\n');
           var lineCount = _nlLines.length;
           if (this.elementOptions.font.multi) {
-            for (var i = 0; i < lineCount; i++) {
-              var blocks = this.splitBlocks(_nlLines[i], this.elementOptions.font.multi);
+            for (var _i = 0; _i < lineCount; _i++) {
+              var blocks = this.splitBlocks(_nlLines[_i], this.elementOptions.font.multi);
               var lineWidth = 0;
               var lineHeight = 0;
               if (blocks) {
@@ -37583,10 +37696,10 @@ return /******/ (function(modules) { // webpackBootstrap
               }
             }
           } else {
-            for (var _i = 0; _i < lineCount; _i++) {
+            for (var _i2 = 0; _i2 < lineCount; _i2++) {
               var _values3 = this.getFormattingValues(ctx, selected, hover, "normal");
               if (this.fontOptions.maxWdt > 0) {
-                var _words = _nlLines[_i].split(" ");
+                var _words = _nlLines[_i2].split(" ");
                 var _text = "";
                 var _measure2 = { width: 0 };
                 var _lastMeasure = void 0;
@@ -37613,7 +37726,7 @@ return /******/ (function(modules) { // webpackBootstrap
                   }
                 }
               } else {
-                var _text2 = _nlLines[_i];
+                var _text2 = _nlLines[_i2];
                 var _measure3 = ctx.measureText(_text2);
                 lines.addAndAccumulate(k, _text2, _values3.font, _values3.color, _measure3.width, _values3.size, _values3.vadjust, "normal", _values3.strokeWidth, _values3.strokeColor);
                 width = lines[k].width > width ? lines[k].width : width;
@@ -39814,9 +39927,9 @@ return /******/ (function(modules) { // webpackBootstrap
           },
           mono: {
             mod: '',
-            size: 15, // px
-            face: 'courier new',
-            vadjust: 2
+            size: 10, // px
+            face: 'Roboto',
+            vadjust: 7
           }
         },
         hidden: false,
@@ -44856,14 +44969,11 @@ return /******/ (function(modules) { // webpackBootstrap
                 var value = edge.options.value;
                 for (var _j1 = 0; _j1 < createEdges.length; _j1++) {
                   var createEdge = createEdges[_j1];
-                  console.log('toId ' + toId + ' fromId ' + toId + ' createEdge -> from ' + createEdge.fromId + ' to ' + createEdge.toId);
                   if (createEdge.fromId === fromId && createEdge.toId === toId || createEdge.toId === fromId && createEdge.fromId === toId) {
-                    console.log('ther same');
                     value += createEdge.edge.options.value;
                     createEdge.hidden = true;
                   }
                 }
-                console.log('create clustered Edges source!!!!!!!!!!!!!');
                 createEdges.push({ edge: edge, fromId: fromId, toId: toId, hidden: false, value: value });
               }
             }
@@ -44872,10 +44982,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
         // here we actually create the replacement edges. We could not do this in the loop above as the creation process
         // would add an edge to the edges array we are iterating over.
-        console.log('createEdgess before for createEdges6', createEdges);
         var lastEdge = createEdges.length - 1;
-        console.log('lastEdge', lastEdge);
-        console.log('createEdgeslen', createEdges.length);
 
         for (var _j2 = 0; _j2 < createEdges.length; _j2++) {
           var _edge = createEdges[_j2].edge;
@@ -44889,8 +44996,6 @@ return /******/ (function(modules) { // webpackBootstrap
           clonedOptions.from = createEdges[_j2].fromId;
           clonedOptions.to = createEdges[_j2].toId;
           clonedOptions.id = 'clusterEdge:' + util.randomUUID();
-          //clonedOptions.id = '(cf: ' + createEdges[j].fromId + " to: " + createEdges[j].toId + ")" + Math.random();
-          console.log('clonedOptions', clonedOptions);
 
           // create the edge and give a reference to the one it replaced.
           var newEdge = this.body.functions.createEdge(clonedOptions);
@@ -52211,8 +52316,8 @@ return /******/ (function(modules) { // webpackBootstrap
       },
       font: {
         color: ['color', '#343434'],
-        size: [14, 0, 100, 1], // px
-        face: ['arial', 'verdana', 'tahoma'],
+        size: [10, 0, 10, 1], // px
+        face: ['Roboto', 'arial', 'verdana', 'tahoma'],
         background: ['color', 'none'],
         strokeWidth: [0, 0, 50, 1], // px
         strokeColor: ['color', '#ffffff']
